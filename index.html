@@ -328,7 +328,10 @@
   .help-btn:active { background:rgba(220,38,38,0.35); }
   .calc-header { position:relative;display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:3px; }
   .calc-header .calc-title { flex:1;padding-right:8px; }
-  .modal-overlay { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:2000;align-items:center;justify-content:center;padding:16px; }
+  .modal-overlay { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:2000;align-items:center;justify-content:center;padding:16px;overflow:hidden; }
+  .modal-overlay .modal-box { display:none; }
+  .modal-overlay.open { display:flex; }
+  .modal-overlay.open .modal-box { display:block; }
   .modal-overlay.open { display:flex; }
   .modal-box { background:#1A1A1A;border:1.5px solid #DC2626;border-radius:16px;width:100%;max-width:440px;max-height:88vh;overflow-y:auto;padding:18px; }
   .modal-top { display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #333; }
@@ -379,6 +382,18 @@
 </style>
 </head>
 <body>
+<!-- MODAL + NORMES + SCHEMAS JS -->
+<div id="modal-overlay" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-top">
+      <div class="modal-title" id="modal-title"></div>
+      <button class="modal-close" onclick="closeModal()">&#x2715;</button>
+    </div>
+    <div class="modal-svg-wrap" id="modal-svg"></div>
+    <div class="modal-formula" id="modal-formula"></div>
+    <div class="modal-ex" id="modal-ex"></div>
+  </div>
+</div>
 
 <div class="header">
   <div class="header-logo">KOMPAN</div>
@@ -1421,19 +1436,6 @@ function calcAmortissant() {
 </script>
 <div style="text-align:center;padding:28px 20px 8px;color:#333;font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:2px;font-weight:700;">MADE BY ROMGER</div>
 
-<!-- MODAL + NORMES + SCHEMAS JS -->
-<div id="modal-overlay" class="modal-overlay">
-  <div class="modal-box">
-    <div class="modal-top">
-      <div class="modal-title" id="modal-title"></div>
-      <button class="modal-close" onclick="closeModal()">&#x2715;</button>
-    </div>
-    <div class="modal-svg-wrap" id="modal-svg"></div>
-    <div class="modal-formula" id="modal-formula"></div>
-    <div class="modal-ex" id="modal-ex"></div>
-  </div>
-</div>
-
 <script>
 // ── SCHEMAS ──
 var SCHEMAS = {
@@ -1864,5 +1866,4 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 </body>
-</html>  coordpolar:{title:"Coordonnées polaires — Schéma",svg:'<svg viewBox="0 0 340 200" xmlns="http://www.w3.org/2000/svg"><rect width="340" height="200" fill="#0D0D0D"/><!-- Axes principaux --><line x1="30" y1="170" x2="310" y2="170" stroke="#555" stroke-width="1.5"/><line x1="30" y1="170" x2="30" y2="10" stroke="#555" stroke-width="1.5"/><text x="314" y="174" font-size="9" fill="#555" font-family="monospace">X</text><text x="23" y="8" font-size="9" fill="#555" font-family="monospace">Y</text><!-- P1 origine - losange comme plan KOMPAN --><polygon points="30,155 45,170 30,185 15,170" fill="#1A1A1A" stroke="#888" stroke-width="1.5"/><circle cx="30" cy="170" r="5" fill="#EAB308"/><text x="34" y="167" font-size="9" fill="#EAB308" font-family="monospace" font-weight="bold">P1</text><text x="5" y="193" font-size="8" fill="#888" font-family="monospace">(0 , 0)</text><!-- P2 destination - losange --><polygon points="220,65 240,85 220,105 200,85" fill="#1A1A1A" stroke="#888" stroke-width="1.5"/><circle cx="220" cy="85" r="5" fill="#EAB308"/><text x="226" y="82" font-size="9" fill="#EAB308" font-family="monospace" font-weight="bold">P2</text><!-- Cotes X et Y comme sur le plan --><rect x="195" y="25" width="34" height="16" rx="2" fill="#1A1A1A" stroke="#555" stroke-width="1"/><text x="212" y="37" text-anchor="middle" font-size="9" fill="#F0EDE8" font-family="monospace">269</text><rect x="230" y="55" width="34" height="16" rx="2" fill="#1A1A1A" stroke="#555" stroke-width="1"/><text x="247" y="67" text-anchor="middle" font-size="9" fill="#F0EDE8" font-family="monospace">308</text><!-- Ligne X horizontal pointille --><line x1="30" y1="170" x2="220" y2="170" stroke="#3B82F6" stroke-width="1.5" stroke-dasharray="6,3"/><text x="110" y="185" text-anchor="middle" font-size="9" fill="#3B82F6" font-family="monospace">X = 269 cm</text><!-- Ligne Y vertical pointille --><line x1="220" y1="170" x2="220" y2="85" stroke="#22C55E" stroke-width="1.5" stroke-dasharray="6,3"/><text x="237" y="130" font-size="9" fill="#22C55E" font-family="monospace">Y=308cm</text><!-- Distance diagonale rouge --><line x1="30" y1="170" x2="220" y2="85" stroke="#DC2626" stroke-width="2.5"/><text x="95" y="110" font-size="12" fill="#DC2626" font-family="monospace" font-weight="bold">380 cm</text><!-- Angle arc --><path d="M 75 170 A 45 45 0 0 0 61 138" fill="none" stroke="#EAB308" stroke-width="1.5"/><text x="80" y="150" font-size="9" fill="#EAB308" font-family="monospace">45°</text></svg>',formula:"<b>Distance</b> = √(X² + Y²) | <b>Angle</b> = arctan(Y ÷ X)",ex:"<b>Ex:</b> X=269, Y=308 → D=<b>409cm</b>, α=<b>48,9°</b>"},
-  amortissant:
+</html>
