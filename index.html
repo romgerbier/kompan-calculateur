@@ -422,7 +422,7 @@
         <div class="section-name">Plans & Échelles</div>
         <div class="section-desc">Convertisseur d'échelle, distance X/Y</div>
       </div>
-      <div class="section-count">2</div>
+      <div class="section-count">3</div>
       <div class="section-arrow">›</div>
     </div>
   </div>
@@ -518,7 +518,7 @@
     <div class="cat-header-icon icon-blue">🗺️</div>
     <div>
       <div class="cat-header-title">Plans & Échelles</div>
-      <div class="cat-header-sub">2 calculateurs disponibles</div>
+      <div class="cat-header-sub">3 calculateurs disponibles</div>
     </div>
   </div>
   <button class="calc-btn" onclick="openCalc('echelle', 'plans')">
@@ -534,6 +534,14 @@
     <div class="calc-btn-text">
       <div class="calc-btn-name">Distance X/Y → Z</div>
       <div class="calc-btn-desc">Distance réelle entre 2 points sur plan</div>
+    </div>
+    <div class="calc-btn-arrow">›</div>
+  </button>
+  <button class="calc-btn" onclick="openCalc('coordpolar', 'plans')">
+    <div class="calc-btn-icon icon-blue">🎯</div>
+    <div class="calc-btn-text">
+      <div class="calc-btn-name">Coordonnées polaires</div>
+      <div class="calc-btn-desc">X,Y → Distance + Angle depuis l'origine (0,0)</div>
     </div>
     <div class="calc-btn-arrow">›</div>
   </button>
@@ -751,6 +759,63 @@
 </div>
 
 <!-- ÉCHELLE -->
+<div class="screen" id="screen-coordpolar">
+  <button class="back-btn" onclick="goCategory()">← Retour</button>
+  <div class="calc-header">
+    <div class="calc-title">🎯 Coordonnées polaires</div>
+    <button class="help-btn" onclick="openSchema('coordpolar')">?</button>
+  </div>
+  <div class="calc-subtitle">Depuis l'origine (0,0) → Distance &amp; Angle</div>
+
+  <div class="card">
+    <div class="input-group">
+      <label class="input-label">Coordonnée X (cm)</label>
+      <div class="input-row">
+        <div contenteditable="true" inputmode="decimal" id="polar-x" data-placeholder="ex: 269" class="fake-input" style="flex:1;min-width:0;background:#2A2A2A;color:#DC2626;-webkit-text-fill-color:#DC2626;caret-color:#DC2626;font-size:17px;font-weight:700;padding:0 14px;border-radius:10px;border:1.5px solid #333;outline:none;height:48px;line-height:48px;overflow:hidden;white-space:nowrap;"></div>
+      </div>
+    </div>
+    <div class="input-group">
+      <label class="input-label">Coordonnée Y (cm)</label>
+      <div class="input-row">
+        <div contenteditable="true" inputmode="decimal" id="polar-y" data-placeholder="ex: 269" class="fake-input" style="flex:1;min-width:0;background:#2A2A2A;color:#DC2626;-webkit-text-fill-color:#DC2626;caret-color:#DC2626;font-size:17px;font-weight:700;padding:0 14px;border-radius:10px;border:1.5px solid #333;outline:none;height:48px;line-height:48px;overflow:hidden;white-space:nowrap;"></div>
+      </div>
+    </div>
+    <button class="calc-btn-action" onclick="calcPolar()">Calculer</button>
+  </div>
+
+  <div id="res-polar" class="result-card" style="display:none;">
+    <div class="result-label">Distance depuis origine</div>
+    <div class="result-value" id="val-polar-dist">—</div>
+    <div class="result-sub" id="sub-polar-dist"></div>
+    <div style="height:1px;background:#333;margin:14px 0;"></div>
+    <div class="result-label">Angle depuis axe X</div>
+    <div class="result-value" id="val-polar-angle">—</div>
+    <div class="result-sub" id="sub-polar-angle"></div>
+  </div>
+
+  <!-- Tableau multi-points -->
+  <div class="card" style="margin-top:12px;">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:#F0EDE8;margin-bottom:10px;">📋 Tableau de points</div>
+    <div id="polar-table" style="font-size:12px;color:#888;margin-bottom:10px;">Aucun point enregistré</div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="addPolarPoint()" style="flex:1;background:#DC2626;color:#fff;border:none;border-radius:8px;padding:10px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;cursor:pointer;">+ Ajouter point</button>
+      <button onclick="clearPolarPoints()" style="background:#2A2A2A;color:#888;border:1px solid #333;border-radius:8px;padding:10px 14px;font-family:'Barlow Condensed',sans-serif;font-size:14px;cursor:pointer;">Vider</button>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:8px;">
+    <div style="font-size:12px;color:#888;line-height:1.7;">
+      <b style="color:#DC2626;">Formule :</b><br>
+      Distance = √(X² + Y²)<br>
+      Angle = arctan(Y ÷ X)<br><br>
+      <b style="color:#EAB308;">💡 Sur le terrain :</b><br>
+      · Depuis la croix (0,0) du plan<br>
+      · Mesurer la distance calculée<br>
+      · Dans la direction de l'angle calculé
+    </div>
+  </div>
+</div>
+
 <div class="screen" id="screen-echelle">
   <button class="back-btn" onclick="goCategory()">← Retour</button>
   <div class="calc-header"><div class="calc-title">🗺️ Convertisseur d'échelle</div><button class="help-btn" onclick="openSchema('echelle')">?</button></div>
@@ -1383,6 +1448,7 @@ var SCHEMAS = {
   division:{title:"Division de segment \u2014 Sch\u00e9ma",svg:'<svg viewBox="0 0 340 100" xmlns="http://www.w3.org/2000/svg"><rect width="340" height="100" fill="#0D0D0D"/><line x1="15" y1="55" x2="325" y2="55" stroke="#888" stroke-width="1.5"/><line x1="15" y1="42" x2="15" y2="68" stroke="#DC2626" stroke-width="2.5"/><line x1="93" y1="45" x2="93" y2="65" stroke="#22C55E" stroke-width="2"/><line x1="171" y1="45" x2="171" y2="65" stroke="#22C55E" stroke-width="2"/><line x1="249" y1="45" x2="249" y2="65" stroke="#22C55E" stroke-width="2"/><line x1="325" y1="42" x2="325" y2="68" stroke="#DC2626" stroke-width="2.5"/><text x="82" y="80" font-size="9" fill="#22C55E" font-family="monospace">3m</text><text x="160" y="80" font-size="9" fill="#22C55E" font-family="monospace">6m</text><text x="238" y="80" font-size="9" fill="#22C55E" font-family="monospace">9m</text><text x="40" y="50" font-size="9" fill="#EAB308" font-family="monospace">3,00m</text><text x="118" y="50" font-size="9" fill="#EAB308" font-family="monospace">3,00m</text><text x="196" y="50" font-size="9" fill="#EAB308" font-family="monospace">3,00m</text><text x="272" y="50" font-size="9" fill="#EAB308" font-family="monospace">3,00m</text></svg>',formula:"<b>Espacement</b> = Total \u00f7 N",ex:"<b>Ex:</b> 12m \u00f7 4 \u2192 <b>3,00m</b> entre chaque piquet"},
   pythagore:{title:"Diagonale / \u00c9querre \u2014 Sch\u00e9ma",svg:'<svg viewBox="0 0 340 115" xmlns="http://www.w3.org/2000/svg"><rect width="340" height="115" fill="#0D0D0D"/><rect x="15" y="15" width="115" height="80" fill="#0A1520" stroke="#3B82F6" stroke-width="2"/><rect x="15" y="15" width="10" height="10" fill="none" stroke="#22C55E" stroke-width="1.5"/><line x1="15" y1="15" x2="130" y2="95" stroke="#DC2626" stroke-width="3"/><text x="40" y="110" font-size="10" fill="#3B82F6" font-family="monospace">A=6m</text><text x="133" y="58" font-size="10" fill="#3B82F6" font-family="monospace">B=8m</text><text x="38" y="58" font-size="14" fill="#DC2626" font-family="monospace" font-weight="bold">C=10m</text><text x="36" y="74" font-size="11" fill="#22C55E" font-family="monospace">\u2705 \u00c9querre</text><rect x="185" y="15" width="150" height="88" fill="#222" stroke="#333" stroke-width="1"/><text x="190" y="96" font-size="15" fill="#22C55E" font-family="monospace" font-weight="bold">=10m \u2705</text></svg>',formula:"<b>C</b>=\u221a(A\u00b2+B\u00b2) \u2192 si C mesur\u00e9=C calcul\u00e9 : \u2705",ex:"<b>Ex:</b> A=6m, B=8m \u2192 C=<b>10m</b> \u2705"},
   zonesec:{title:"Zone de s\u00e9curit\u00e9 EN 1176",svg:'<svg viewBox="0 0 340 120" xmlns="http://www.w3.org/2000/svg"><rect width="340" height="120" fill="#0D0D0D"/><rect x="12" y="18" width="90" height="78" fill="#1A0000" stroke="#DC2626" stroke-width="1.5" stroke-dasharray="5,3"/><rect x="32" y="38" width="50" height="38" fill="#1A3A1A" stroke="#22C55E" stroke-width="2"/><text x="36" y="61" font-size="9" fill="#22C55E" font-family="monospace">\u00c9quip.</text><text x="14" y="108" font-size="8" fill="#DC2626" font-family="monospace">1,75m autour</text><rect x="135" y="45" width="38" height="24" fill="#1A3A1A" stroke="#22C55E" stroke-width="2"/><rect x="87" y="33" width="134" height="48" fill="#1A0000" stroke="#DC2626" stroke-width="1.5" stroke-dasharray="5,3"/><text x="90" y="29" font-size="9" fill="#DC2626" font-family="monospace">4m</text><text x="205" y="29" font-size="9" fill="#DC2626" font-family="monospace">4m</text><circle cx="290" cy="60" r="28" fill="#1A0000" stroke="#DC2626" stroke-width="1.5" stroke-dasharray="5,3"/><circle cx="290" cy="60" r="14" fill="#1A3A1A" stroke="#22C55E" stroke-width="2"/></svg>',formula:"<b>Statique:</b> max(1,5m;1,5+(HCL-1,5)\u00d70,5)",ex:"<b>Ex:</b> HCL=2m \u2192 marge <b>1,75m</b>"},
+  coordpolar:{title:"Coordonnées polaires — Plan KOMPAN",svg:'<svg viewBox="0 0 340 200" xmlns="http://www.w3.org/2000/svg"><rect width="340" height="200" fill="#0D0D0D"/><line x1="30" y1="165" x2="310" y2="165" stroke="#555" stroke-width="1.5"/><line x1="30" y1="165" x2="30" y2="10" stroke="#555" stroke-width="1.5"/><polygon points="308,162 316,165 308,168" fill="#555"/><polygon points="27,12 30,4 33,12" fill="#555"/><text x="315" y="169" font-size="8" fill="#555" font-family="monospace">X</text><text x="22" y="8" font-size="8" fill="#555" font-family="monospace">Y</text><polygon points="30,150 45,165 30,180 15,165" fill="#1A1A1A" stroke="#888" stroke-width="1.5"/><circle cx="30" cy="165" r="4" fill="#EAB308"/><text x="36" y="162" font-size="8" fill="#EAB308" font-family="monospace" font-weight="bold">P1</text><text x="4" y="192" font-size="7.5" fill="#888" font-family="monospace">(0,0)</text><rect x="0" y="155" width="20" height="14" rx="2" fill="#1A1A1A" stroke="#555" stroke-width="1"/><text x="10" y="165" text-anchor="middle" font-size="7" fill="#F0EDE8" font-family="monospace">0</text><polygon points="215,70 235,90 215,110 195,90" fill="#1A1A1A" stroke="#888" stroke-width="1.5"/><circle cx="215" cy="90" r="4" fill="#EAB308"/><text x="222" y="87" font-size="8" fill="#EAB308" font-family="monospace" font-weight="bold">P2</text><rect x="192" y="20" width="34" height="15" rx="2" fill="#1A1A1A" stroke="#555" stroke-width="1"/><text x="209" y="31" text-anchor="middle" font-size="8" fill="#F0EDE8" font-family="monospace">269</text><rect x="234" y="62" width="34" height="15" rx="2" fill="#1A1A1A" stroke="#555" stroke-width="1"/><text x="251" y="73" text-anchor="middle" font-size="8" fill="#F0EDE8" font-family="monospace">308</text><line x1="215" y1="16" x2="215" y2="22" stroke="#555" stroke-width="1"/><line x1="236" y1="55" x2="242" y2="60" stroke="#555" stroke-width="1"/><line x1="30" y1="165" x2="215" y2="165" stroke="#3B82F6" stroke-width="1.5" stroke-dasharray="5,3"/><text x="112" y="180" text-anchor="middle" font-size="8.5" fill="#3B82F6" font-family="monospace">X = 269 cm</text><line x1="215" y1="165" x2="215" y2="90" stroke="#22C55E" stroke-width="1.5" stroke-dasharray="5,3"/><text x="232" y="130" font-size="8.5" fill="#22C55E" font-family="monospace">Y = 269</text><line x1="30" y1="165" x2="215" y2="90" stroke="#DC2626" stroke-width="2.5"/><text x="90" y="108" font-size="13" fill="#DC2626" font-family="monospace" font-weight="bold">380 cm</text><path d="M 72 165 A 42 42 0 0 0 59 136" fill="none" stroke="#EAB308" stroke-width="1.5"/><text x="76" y="148" font-size="9" fill="#EAB308" font-family="monospace">45°</text></svg>',formula:"<b>Distance</b> = √(X² + Y²) | <b>Angle</b> = arctan(Y ÷ X)",ex:"<b>Ex:</b> X=269, Y=269 → D=<b>380 cm</b>, α=<b>45°</b>"},
   amortissant:{title:"Sol amortissant EN 1176",svg:'<svg viewBox="0 0 340 115" xmlns="http://www.w3.org/2000/svg"><rect width="340" height="115" fill="#0D0D0D"/><circle cx="80" cy="8" r="6" fill="#F0EDE8"/><line x1="80" y1="14" x2="80" y2="44" stroke="#DC2626" stroke-width="2.5"/><polygon points="75,44 85,44 80,52" fill="#DC2626"/><rect x="15" y="55" width="150" height="45" fill="#2A1800" stroke="#EAB308" stroke-width="2"/><text x="28" y="74" font-size="10" fill="#EAB308" font-family="monospace">COPEAUX DE BOIS</text><text x="175" y="82" font-size="14" fill="#22C55E" font-family="monospace" font-weight="bold">25cm</text><rect x="210" y="20" width="125" height="88" fill="#222" stroke="#333" stroke-width="1"/><text x="215" y="76" font-size="11" fill="#22C55E" font-family="monospace" font-weight="bold">3m\u219225cm\u2190</text></svg>',formula:"<b>\u00c9paisseur min.</b> selon mat\u00e9riau et HCL (EN 1176)",ex:"<b>Ex:</b> Copeaux, HCL=3m \u2192 <b>25cm min.</b>"}
 };
 
@@ -1395,6 +1461,57 @@ function openSchema(key) {
   document.getElementById('modal-overlay').className = 'modal-overlay open';
   document.body.style.overflow = 'hidden';
 }
+var polarPoints = [];
+
+function calcPolar() {
+  var x = parseFloat(document.getElementById("polar-x").innerText.replace(",","."));
+  var y = parseFloat(document.getElementById("polar-y").innerText.replace(",","."));
+  var res = document.getElementById("res-polar");
+  if (isNaN(x) || isNaN(y)) { res.style.display="none"; return; }
+  var dist = Math.sqrt(x*x + y*y);
+  var angle = Math.atan2(y, x) * 180 / Math.PI;
+  if (angle < 0) angle += 360;
+  document.getElementById("val-polar-dist").textContent = dist.toFixed(1) + " cm";
+  document.getElementById("sub-polar-dist").textContent = (dist/100).toFixed(3) + " m";
+  document.getElementById("val-polar-angle").textContent = angle.toFixed(2) + "°";
+  document.getElementById("sub-polar-angle").textContent = "Depuis l'axe X (sens horaire)";
+  res.style.display = "block";
+}
+
+function addPolarPoint() {
+  var x = parseFloat(document.getElementById("polar-x").innerText.replace(",","."));
+  var y = parseFloat(document.getElementById("polar-y").innerText.replace(",","."));
+  if (isNaN(x) || isNaN(y)) return;
+  var dist = Math.sqrt(x*x + y*y);
+  var angle = Math.atan2(y, x) * 180 / Math.PI;
+  if (angle < 0) angle += 360;
+  polarPoints.push({x:x, y:y, dist:dist, angle:angle});
+  renderPolarTable();
+}
+
+function renderPolarTable() {
+  var el = document.getElementById("polar-table");
+  if (polarPoints.length === 0) { el.innerHTML="<span style='color:#888;'>Aucun point enregistré</span>"; return; }
+  var html = "<table style='width:100%;border-collapse:collapse;font-size:11px;'>";
+  html += "<tr style='color:#DC2626;font-weight:700;'><td>Pt</td><td>X</td><td>Y</td><td>Dist</td><td>Angle</td></tr>";
+  polarPoints.forEach(function(p, i) {
+    html += "<tr style='border-top:1px solid #2A2A2A;'>";
+    html += "<td style='padding:5px 4px;color:#EAB308;'>P"+(i+1)+"</td>";
+    html += "<td style='padding:5px 4px;color:#F0EDE8;'>"+p.x+"</td>";
+    html += "<td style='padding:5px 4px;color:#F0EDE8;'>"+p.y+"</td>";
+    html += "<td style='padding:5px 4px;color:#22C55E;font-weight:700;'>"+p.dist.toFixed(1)+"cm</td>";
+    html += "<td style='padding:5px 4px;color:#3B82F6;'>"+p.angle.toFixed(1)+"°</td>";
+    html += "</tr>";
+  });
+  html += "</table>";
+  el.innerHTML = html;
+}
+
+function clearPolarPoints() {
+  polarPoints = [];
+  renderPolarTable();
+}
+
 function calcTyroCable() {
   var D = parseFloat(document.getElementById('tyro-dist').innerText.replace(',','.'));
   var f = parseFloat(document.getElementById('tyro-fleche').innerText.replace(',','.'));
@@ -1747,4 +1864,5 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 </body>
-</html>
+</html>  coordpolar:{title:"Coordonnées polaires — Schéma",svg:'<svg viewBox="0 0 340 200" xmlns="http://www.w3.org/2000/svg"><rect width="340" height="200" fill="#0D0D0D"/><!-- Axes principaux --><line x1="30" y1="170" x2="310" y2="170" stroke="#555" stroke-width="1.5"/><line x1="30" y1="170" x2="30" y2="10" stroke="#555" stroke-width="1.5"/><text x="314" y="174" font-size="9" fill="#555" font-family="monospace">X</text><text x="23" y="8" font-size="9" fill="#555" font-family="monospace">Y</text><!-- P1 origine - losange comme plan KOMPAN --><polygon points="30,155 45,170 30,185 15,170" fill="#1A1A1A" stroke="#888" stroke-width="1.5"/><circle cx="30" cy="170" r="5" fill="#EAB308"/><text x="34" y="167" font-size="9" fill="#EAB308" font-family="monospace" font-weight="bold">P1</text><text x="5" y="193" font-size="8" fill="#888" font-family="monospace">(0 , 0)</text><!-- P2 destination - losange --><polygon points="220,65 240,85 220,105 200,85" fill="#1A1A1A" stroke="#888" stroke-width="1.5"/><circle cx="220" cy="85" r="5" fill="#EAB308"/><text x="226" y="82" font-size="9" fill="#EAB308" font-family="monospace" font-weight="bold">P2</text><!-- Cotes X et Y comme sur le plan --><rect x="195" y="25" width="34" height="16" rx="2" fill="#1A1A1A" stroke="#555" stroke-width="1"/><text x="212" y="37" text-anchor="middle" font-size="9" fill="#F0EDE8" font-family="monospace">269</text><rect x="230" y="55" width="34" height="16" rx="2" fill="#1A1A1A" stroke="#555" stroke-width="1"/><text x="247" y="67" text-anchor="middle" font-size="9" fill="#F0EDE8" font-family="monospace">308</text><!-- Ligne X horizontal pointille --><line x1="30" y1="170" x2="220" y2="170" stroke="#3B82F6" stroke-width="1.5" stroke-dasharray="6,3"/><text x="110" y="185" text-anchor="middle" font-size="9" fill="#3B82F6" font-family="monospace">X = 269 cm</text><!-- Ligne Y vertical pointille --><line x1="220" y1="170" x2="220" y2="85" stroke="#22C55E" stroke-width="1.5" stroke-dasharray="6,3"/><text x="237" y="130" font-size="9" fill="#22C55E" font-family="monospace">Y=308cm</text><!-- Distance diagonale rouge --><line x1="30" y1="170" x2="220" y2="85" stroke="#DC2626" stroke-width="2.5"/><text x="95" y="110" font-size="12" fill="#DC2626" font-family="monospace" font-weight="bold">380 cm</text><!-- Angle arc --><path d="M 75 170 A 45 45 0 0 0 61 138" fill="none" stroke="#EAB308" stroke-width="1.5"/><text x="80" y="150" font-size="9" fill="#EAB308" font-family="monospace">45°</text></svg>',formula:"<b>Distance</b> = √(X² + Y²) | <b>Angle</b> = arctan(Y ÷ X)",ex:"<b>Ex:</b> X=269, Y=308 → D=<b>409cm</b>, α=<b>48,9°</b>"},
+  amortissant:
